@@ -1,0 +1,415 @@
+nova-sentinel/
+│
+├── .github/                                          # CI/CD Workflows
+│   └── workflows/
+│       ├── deploy-prod.yml
+│       └── sdk-rotation.yml                          # 🚀 FUTURE: Auto obfuscate & publish SDK
+│
+├── apps/
+│   │
+│   ├── gateway/
+│   │   ├── src/
+│   │   │   ├── routes/
+│   │   │   │   ├── b2b.routes.js
+│   │   │   │   ├── b2c.routes.js
+│   │   │   │   └── internal.routes.js
+│   │   │   ├── middleware/
+│   │   │   │   ├── rateLimiter.js
+│   │   │   │   ├── ipFilter.js
+│   │   │   │   ├── requestCoalescer.js               # 🚀 FUTURE: Single flight pattern for DDoS
+│   │   │   │   ├── correlationId.js
+│   │   │   │   └── bloomFilter.cache.js              # 🚀 FUTURE: In-memory known bad IPs
+│   │   │   ├── plugins/
+│   │   │   │   └── failover.plugin.js
+│   │   │   ├── handlers/
+│   │   │   │   ├── proxy.handler.js
+│   │   │   │   └── error.handler.js
+│   │   │   ├── validator.js
+│   │   │   └── server.js
+│   │   ├── config/
+│   │   │   ├── default.js
+│   │   │   ├── production.js
+│   │   │   └── cloudflare.worker.js
+│   │   ├── tests/
+│   │   │   └── gateway.test.js
+│   │   ├── Dockerfile
+│   │   ├── .dockerignore
+│   │   └── package.json
+│   │
+│   ├── auth-service/
+│   │   ├── src/
+│   │   │   ├── controller/
+│   │   │   │   ├── auth.controller.js
+│   │   │   │   └── webhook.controller.js
+│   │   │   ├── service/
+│   │   │   │   ├── jwt.service.js
+│   │   │   │   ├── session.service.js
+│   │   │   │   ├── mfa.service.js
+│   │   │   │   └── billing.service.js
+│   │   │   ├── models/
+│   │   │   │   ├── User.js
+│   │   │   │   └── Subscription.js
+│   │   │   ├── tokenManager.js
+│   │   │   ├── validator.js
+│   │   │   └── server.js
+│   │   ├── config/
+│   │   │   └── roles.policy.js
+│   │   ├── tests/
+│   │   │   └── auth.test.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── core-engine/
+│   │   ├── src/
+│   │   │   ├── engine.js
+│   │   │   ├── pipeline/
+│   │   │   │   ├── pre.filter.js
+│   │   │   │   ├── risk.check.js
+│   │   │   │   ├── behavior.check.js
+│   │   │   │   └── deception.route.js
+│   │   │   ├── contextBuilder.js
+│   │   │   ├── decision.js
+│   │   │   ├── responseHandler.js
+│   │   │   └── server.js
+│   │   ├── config/
+│   │   │   └── pipeline.rules.json
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── risk-engine/
+│   │   ├── src/
+│   │   │   ├── riskCalculator.js
+│   │   │   ├── rules/
+│   │   │   │   ├── ip.rules.js
+│   │   │   │   ├── header.rules.js
+│   │   │   │   └── payload.rules.js
+│   │   │   ├── ipReputation.js
+│   │   │   ├── deviceFingerprint.js
+│   │   │   ├── cache/
+│   │   │   │   └── lru.cache.js
+│   │   │   └── server.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── behavior-service/
+│   │   ├── src/
+│   │   │   ├── tracker/
+│   │   │   │   ├── mouse.tracker.js
+│   │   │   │   └── keystroke.tracker.js
+│   │   │   ├── analyzer/
+│   │   │   │   ├── entropy.js
+│   │   │   │   └── session.analyzer.js
+│   │   │   ├── patternEngine.js
+│   │   │   ├── profileStore.js
+│   │   │   └── server.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── adaptive-service/
+│   │   ├── src/
+│   │   │   ├── endpointMutator.js
+│   │   │   ├── tokenRotator.js
+│   │   │   ├── requestObfuscator.js
+│   │   │   ├── strategyEngine.js
+│   │   │   └── server.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── deception-service/
+│   │   ├── src/
+│   │   │   ├── trapEngine.js
+│   │   │   ├── fakeApi/
+│   │   │   │   ├── login.honeypot.js
+│   │   │   │   └── backup.honeypot.js
+│   │   │   ├── fakeDatabase/
+│   │   │   │   ├── generator.js
+│   │   │   │   └── schemas/
+│   │   │   │       ├── finance.fake.sql
+│   │   │   │       └── users.fake.sql
+│   │   │   ├── attackerLogger.js
+│   │   │   ├── tarpit.js                           # 🚀 FUTURE: Slowloris connection trap
+│   │   │   └── server.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── monitoring-service/
+│   │   ├── src/
+│   │   │   ├── logger/
+│   │   │   │   ├── structured.logger.js
+│   │   │   │   └── audit.trail.js
+│   │   │   ├── alertService.js
+│   │   │   ├── metricsCollector.js
+│   │   │   └── server.js
+│   │   ├── config/
+│   │   │   └── prometheus.yml
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   └── dashboard/                                   # React Frontend
+│       ├── public/
+│       │   ├── index.html
+│       │   └── favicon.ico
+│       ├── src/
+│       │   ├── pages/
+│       │   │   ├── Login.jsx
+│       │   │   ├── Dashboard.jsx
+│       │   │   ├── LiveThreatMap.jsx                # 🚀 FUTURE: 3D Globe (Spline/Three.js)
+│       │   │   ├── Analytics.jsx
+│       │   │   ├── Clients.jsx
+│       │   │   ├── APIKeys.jsx
+│       │   │   └── HoneypotViewer.jsx               # 🚀 FUTURE: Session Replay Player
+│       │   ├── components/
+│       │   │   ├── Navbar.jsx
+│       │   │   ├── Sidebar.jsx
+│       │   │   ├── Card.jsx
+│       │   │   ├── Chart.jsx
+│       │   │   └── Loader.jsx
+│       │   ├── services/
+│       │   │   ├── api.js
+│       │   │   ├── authService.js
+│       │   │   └── analyticsService.js
+│       │   ├── hooks/
+│       │   │   ├── useAuth.js
+│       │   │   └── useAnalytics.js
+│       │   ├── utils/
+│       │   │   ├── helpers.js
+│       │   │   └── constants.js
+│       │   ├── App.jsx
+│       │   └── main.jsx
+│       ├── Dockerfile
+│       ├── nginx.conf
+│       └── package.json
+│
+├── sdk/                                             # Client Libraries
+│   ├── js-web/
+│   │   ├── src/
+│   │   │   ├── novaClient.js
+│   │   │   ├── trackers/
+│   │   │   │   ├── fingerprint.js
+│   │   │   │   ├── mouse.js
+│   │   │   │   └── network.js
+│   │   │   ├── sender.js
+│   │   │   └── config.js
+│   │   ├── dist/
+│   │   │   └── .gitkeep
+│   │   ├── build/
+│   │   │   └── obfuscate.js                         # 🚀 FUTURE: Daily function name rotator
+│   │   ├── tests/
+│   │   │   └── sdk.test.js
+│   │   ├── webpack.config.js
+│   │   └── package.json
+│   │
+│   ├── node-api/
+│   │   ├── src/
+│   │   │   ├── client.js
+│   │   │   ├── interceptor.js
+│   │   │   └── config.js
+│   │   ├── tests/
+│   │   │   └── middleware.test.js
+│   │   └── package.json
+│   │
+│   ├── python-ai/
+│   │   ├── nova/
+│   │   │   ├── __init__.py
+│   │   │   ├── client.py
+│   │   │   ├── middleware.py
+│   │   │   └── config.py
+│   │   ├── tests/
+│   │   │   └── test_client.py
+│   │   ├── setup.py
+│   │   └── requirements.txt
+│   │
+│   └── flutter-b2c/                                 # Mobile App SDK
+│       ├── lib/
+│       │   ├── nova_flutter.dart
+│       │   ├── src/
+│       │   │   ├── link_scanner.dart                # 🚀 FUTURE: WhatsApp/Notification Interceptor
+│       │   │   └── dns_filter.dart
+│       │   └── models/
+│       │       └── threat.dart
+│       ├── test/
+│       │   └── widget_test.dart
+│       ├── pubspec.yaml
+│       └── README.md
+│
+├── ai/                                              # AI/ML Layer
+│   ├── models/
+│   │   ├── anomalyModel/
+│   │   │   ├── saved_model.pb
+│   │   │   └── variables/
+│   │   │       ├── variables.data-00000-of-00001
+│   │   │       └── variables.index
+│   │   ├── classifier/
+│   │   │   └── phishing_nlp.h5
+│   │   └── config/
+│   │       └── model_registry.json
+│   │
+│   ├── training/
+│   │   ├── datasetLoader.py
+│   │   ├── syntheticAttackGen.py                    # 🚀 FUTURE: LLM-based fake payload generator
+│   │   ├── trainingPipeline.py
+│   │   ├── evaluator.py
+│   │   ├── Dockerfile.training
+│   │   └── requirements.txt
+│   │
+│   └── inference/
+│       ├── predictor.js
+│       ├── scorer.js
+│       ├── modelCache.js
+│       ├── tensorflow.bridge.js
+│       └── package.json
+│
+├── data-layer/                                      # Database & Storage Abstraction
+│   ├── ingestion/
+│   │   ├── collector.js
+│   │   ├── validator.js
+│   │   ├── normalizer.js
+│   │   └── kafka.producer.js
+│   │
+│   ├── processing/
+│   │   ├── processor.js
+│   │   ├── aggregator.js
+│   │   └── transformer.js
+│   │
+│   └── storage/
+│       ├── models/
+│       │   ├── ThreatLog.js
+│       │   ├── UserProfile.js
+│       │   └── SharedIntel.js
+│       ├── db.js
+│       ├── cache.js
+│       └── migrations/
+│           ├── 001_init.sql
+│           └── 002_add_b2c_profiles.sql
+│
+├── security/                                        # Zero-Trust & Encryption Core
+│   ├── zero-trust/
+│   │   ├── verifier.js
+│   │   ├── policyEngine.js
+│   │   ├── accessControl.js
+│   │   └── autoLockdown.js                          # 🚀 FUTURE: Automated breach response
+│   │
+│   ├── encryption/
+│   │   ├── encrypt.js
+│   │   ├── decrypt.js
+│   │   └── keyManager.js
+│   │
+│   ├── key-rotation/
+│   │   ├── rotator.js
+│   │   ├── scheduler.js
+│   │   └── vault.js
+│   │
+│   └── anomaly-detection/
+│       ├── detector.js
+│       ├── rules/
+│       │   └── internal.threats.js
+│       └── notifier.js
+│
+├── services/                                        # Background Workers & Threat Feeds
+│   ├── self-healing/
+│   │   ├── monitor.js
+│   │   ├── isolate.js
+│   │   ├── recover.js
+│   │   └── rollback.js
+│   │
+│   ├── threat-intel/
+│   │   ├── feedCollector.js
+│   │   ├── telegramScanner.js                       # 🚀 FUTURE: Scrape phishing kits from Telegram
+│   │   ├── processor.js
+│   │   └── updater.js
+│   │
+│   └── scheduler/
+│       ├── cron.js
+│       ├── jobs/
+│       │   ├── sdkRotate.job.js
+│       │   └── backup.job.js
+│       └── worker.js
+│
+├── infra/                                           # Infrastructure as Code
+│   ├── terraform/
+│   │   ├── modules/
+│   │   │   ├── ecs/
+│   │   │   │   ├── main.tf
+│   │   │   │   ├── variables.tf
+│   │   │   │   └── outputs.tf
+│   │   │   ├── rds/
+│   │   │   │   ├── main.tf
+│   │   │   │   └── variables.tf
+│   │   │   ├── dynamodb/
+│   │   │   │   └── main.tf
+│   │   │   └── s3/
+│   │   │       └── main.tf
+│   │   ├── envs/
+│   │   │   ├── dev/
+│   │   │   │   ├── main.tf
+│   │   │   │   ├── variables.tf
+│   │   │   │   └── terraform.tfvars
+│   │   │   └── prod/
+│   │   │       ├── main.tf
+│   │   │       ├── variables.tf
+│   │   │       └── terraform.tfvars
+│   │   └── global/
+│   │       ├── cloudflare.tf
+│   │       └── iam.tf
+│   │
+│   └── cloudformation/
+│       ├── lambda-edge.yaml
+│       └── backup-vault.yaml
+│
+├── tests/                                           # End-to-End & Security Tests
+│   ├── unit/
+│   │   ├── engine.test.js
+│   │   ├── risk.test.js
+│   │   └── auth.test.js
+│   │
+│   ├── integration/
+│   │   ├── api.flow.test.js
+│   │   └── sdk.cross.test.js
+│   │
+│   ├── security/
+│   │   ├── attack.simulation.js
+│   │   ├── fuzzing.test.js
+│   │   └── penetration.test.js
+│   │
+│   └── load/
+│       └── k6.load.js
+│
+├── scripts/                                         # Utility Scripts
+│   ├── setup.sh
+│   ├── deploy.sh
+│   ├── backup.sh
+│   ├── rotate-sdk-secrets.sh
+│   └── generate-fake-db.sh
+│
+├── docs/                                            # Comprehensive Documentation
+│   ├── architecture/
+│   │   ├── overview.md
+│   │   ├── data-flow.md
+│   │   └── zero-trust-model.md
+│   ├── api/
+│   │   ├── b2b-api.yaml
+│   │   └── internal-api.yaml
+│   ├── threat-model.md
+│   ├── deployment-guide.md
+│   └── compliance/
+│       └── gdpr-dpia.md
+│
+├── logs/                                            # Log Directory (Gitignored)
+│   └── .gitkeep
+│
+├── docker/                                          # Docker Compose & Local Dev
+│   ├── docker-compose.yml
+│   ├── docker-compose.prod.yml
+│   ├── localstack/
+│   │   └── init.sh
+│   └── prometheus/
+│       └── prometheus.yml
+│
+├── .env.example
+├── .gitignore
+├── .prettierrc
+├── .eslintrc.js
+├── package.json                                     # Root Workspace (Turborepo)
+├── turbo.json
+├── README.md
+└── LICENSE
